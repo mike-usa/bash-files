@@ -1,0 +1,8 @@
+
+## Completes before installing bash-completion
+# $ complete -p
+# complete -F _rbenv rbenv
+
+## New Completions
+# Make "go" alias use cd completion
+complete -o nospace -F _cd go
