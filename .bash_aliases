@@ -1,35 +1,161 @@
+# file: ./.bash_aliases
+# author: @_mikeusa / github: mike-usa
+
+# Syntax Notes
+# - 'function' keyword is necessary to not break OSX when overriding utilities
+# - 
+
 bind '"^[[A":history-search-backward'
 bind '"^[[B":history-search-forward'
+
 
 alias lla='ls -la'
 alias go='cd'
 alias prev='cd -'
-#alias emacs='emacs &'
 alias md='mkdir'
 alias up='cd ..'
 alias home='cd ~/'
 alias cls='clear'
 function e() { emacs $@ & }
-# function n() { 
-#    export LANG=en_US
-#    nedit $@ &
-#    export LANG=en_US.UTF-8
-#    }
 alias subl='sublime'
 alias settings='sublime ~/.bash_aliases'
 alias refresh='source ~/.bashrc'
+
+# Hidden Files (dotfiles); hidden-all, hidden directories, hidden files
+function ha () { ls -lap               | grep -P "\s\." "$@" ; }
+function hd () { ls -lap | grep \/$    | grep -P "\s\." "$@" ; }
+function hf () { ls -lap | grep -v \/$ | grep -P "\s\." "$@" ; }
+
+
 
 # View markdown in terminal; requires pandoc + lynx installed
 function mdn () {
   pandoc "$@" | lynx -stdin
 }
+#######################################################################
+
+# Display aliases and function defs
+function a() {
+  # display aliases
+  alias ;
+  
+  # display functions; requires grep v3.x or later installed
+  declare -F | grep -vP " - fx? _" ;
+
+  # to look up a specific function use command 'type':
+  # Example: type <function name>
+}
+
+# Wrapper around 'tree' utility
+function tree () {
+  # -A: ansi line graphics (fixes charset issues)
+  # -C: always-on color (no way to override)
+  # EXAMPLE: command tree -AC "#@" ;
+  ## --------------------------------------------
+  # https://superuser.com/a/378126/959327
+  # According to answer:
+  #  - $LC_ALL overrides all other locale settings
+  #  - -A option forces VT100 graphics
+
+  # track default options (removed by supplying as an arg to tree)
+  local option=( C p )
+  local args=("$@")
+
+  # Iterate over default options and 
+  #  check if they are in supplied options
+  #  if they are, remove them from the supplied
+  #  and default (to overwrite default inclusion)
+  local options
+  local opt_ndx
+  local i
+  for opt_ndx in "${!option[@]}"; do
+    local opt=${option[$opt_ndx]}
+    local found=false
+
+    for i in "${!args[@]}"; do
+      if [[ ${args[i]} = "-$opt" ]]; then
+        found=true
+        unset 'args[i]'
+      fi
+    done
+  done
+
+  # Squish the option values together (join_by function defined below)
+  option=$(join_by '' "${option[@]}")
+
+  # Call command with default options if set
+  command tree -$option "${args[@]}"
+}
+
+# join_by is used in tree
+function join_by { local IFS="$1"; shift; echo "$*"; }
+
+# Tar Directory
+function tard () {
+  NAME=${@: -1}        # last argument (target directory)
+
+  if [ ! -d $NAME ]; then
+    echo "$NAME is not a directory"
+    unset NAME
+    return;
+  fi
+
+  NAME=${NAME%/}       # strip trailing slash
+  OPTIONS=${@: 1:$#-1} # everything but the last option (target)
+  if [ ! -f $NAME.tar.gz ]; then
+    tar -czvf $OPTIONS $NAME.tar.gz ${@: -1} --remove-files ;
+  fi
+
+  # Cleanup
+  unset NAME
+  unset OPTIONS
+}
+# Untar
+function untar () {
+  # expects a gzipped tar file
+  NAME=${1%.tar.gz} ;
+
+  # Do not need --xform (was creating two directories)
+  # tar -xzvf $@ --xform="s|^|$NAME/|S"
+  if tar -xzvf $@
+  then
+    rm $1
+  fi
+
+  # Cleanup
+  unset NAME
+}
+
+# Colorize Grep
+function grep () {
+  # linuxbrew/homebrew installs 'ggrep'; an updated version of grep (3.x or later)
+  # is required, since OSX comes with grep v2.x, which doesn't include perl regex 
+  # matching
+
+  # TODO: check if ggrep exists before using
+  command ggrep --color=auto "$@"
+}
+
+
+#######################################################################
+
+# MS-DOS Prompt/Command Line Conversions
+alias cls='clear'
+alias clr='clear'
+alias copy='cp -i'
+alias del='rm -i'
+alias delete='rm -i'
+alias home='cd ~'
+alias md='mkdir'
+alias move='mv -i'
+########################################
+
+
 
 alias +w='chmod +w'
 alias +x='chmod +x'
-alias a='alias'
 alias ad='cd; a > a; . ~/.bash_profile; a > b; diff a b'
 alias ag='alias | grep -i'
-alias amend='git commit --amend'
 alias asp='system_profiler'
 alias cba='cat ~/.bash_aliases'
 alias cp='cp -i'
@@ -42,6 +168,9 @@ alias ejectm='sudo umount -f'
 alias envg='env | grep'
 alias eth='ifconfig -a'
 alias f='finger'
+
+# Git Shortcuts
+alias amend='git commit --amend'
 alias ga='git add'
 alias gca='git commit -a'
 alias gcam='git commit -a -m'
@@ -55,10 +184,18 @@ alias gmv='git mv'
 alias grm='git rm'
 alias gs='git status'
 alias gsm='gs | more'
+alias pull='git pull'
+alias push='git push'
+###############
+
+
 alias h='history'
 alias hc='h | cut -c8-'
 alias hg='h | grep -v grep | grep -i'
 alias k='sudo kill -9'
+
+
+# ls wrappers
 alias l='ls -alFG'
 alias l.='ls -d .*'
 alias la='l [A-Za-z]*'
@@ -74,6 +211,9 @@ alias lt='l -tr'
 alias lvl='lt /var/log'
 alias lx='lg "*"'
 alias lz='l | sort -n -k5'
+#############
+
+
 alias mq='mailq'
 alias msd='mysqldump'
 alias mv='mv -i'
@@ -83,8 +223,6 @@ alias pbc='arp -a | grep ^bc | sort'
 alias pp='pull; push'
 alias psa='ps -Ajeww'
 alias psg='psa | grep -v grep | grep -i'
-alias pull='git pull'
-alias push='git push'
 alias rmd='sudo rm -rf'
 alias sci='~/bin/ssh-copy-id -i ~/.ssh/id_rsa.pub'
 alias se='export TERM=vt102'
