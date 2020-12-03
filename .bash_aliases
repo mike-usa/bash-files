@@ -133,7 +133,12 @@ function grep () {
   # matching
 
   # TODO: check if ggrep exists before using
-  command ggrep --color=auto "$@"
+  if ! command -v ggrep &> /dev/null
+  then
+    command grep --color=auto "$@"
+  else
+    command ggrep --color=auto "$@"
+  fi
 }
 
 
