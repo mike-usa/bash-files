@@ -102,8 +102,8 @@ fi
 # /usr/bin may need to come before /usr/local/bin
 # some programs will expect to use the system version (eg ruby) and break if they get the newer, Homebrew version
 # 20131027 adding path for rbenv
-export PATH=~/.rbenv/shims:~/bin:/usr/local/bin:/usr/local/sbin:$PATH
-export CDPATH=~/Workspace/node/sails:$CDPATH
+export PATH=~/.rbenv/shims:~/bin:/usr/local/bin:/usr/local/sbin:~/bin:$PATH
+export CDPATH=~/Workspace/node/sails:Projects:$CDPATH
 #Remove Duplicates:
 PATH=`perl -e '@A=split(/:/,$ENV{PATH});%H=map {$A[$#A-$_]=>$#A-$_} (0..$#A);@A=join(":",sort{$H{$a} <=> $H{$b} }keys %H);print "@A"'`
 export PATH
