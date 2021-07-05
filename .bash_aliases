@@ -18,7 +18,7 @@ alias home='cd ~/'
 alias cls='clear'
 function e() { emacs $@ & }
 alias subl='sublime'
-alias settings='sublime ~/.bash_aliases'
+alias settings='$EDITOR ~/.bash_aliases'
 alias refresh='source ~/.bashrc'
 
 # Hidden Files (dotfiles); hidden-all, hidden directories, hidden files
@@ -141,6 +141,14 @@ function grep () {
   fi
 }
 
+# Start/Stop Postgres and Check if server is running
+alias pgstart='pg_ctl -D $HOMEBREW_PREFIX/var/postgres start'
+alias pgstop='pg_ctl stop -D $HOMEBREW_PREFIX/var/postgres'
+alias pgcheck='[ "$(pgrep -fa -- -D | grep postgres)" ] && echo "Postgres started" || echo "Postgres stopped"'
+
+function dotdiff () {
+  diff ~/Projects/github/bash-files ~/. --suppress-common-lines --color=always -y "$@" | grep -v -P "Only in [/.]"
+}
 
 #######################################################################
 
@@ -210,7 +218,7 @@ alias le='ls -le'
 alias lg='lt | grep'
 alias lh='l -h'
 alias ll='ls -l'
-alias ls='/bin/ls -G'
+alias ls='/bin/ls --color -G'
 alias lst='last -10'
 alias lt='l -tr'
 alias lvl='lt /var/log'
