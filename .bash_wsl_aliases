@@ -2,3 +2,13 @@
 
 alias subl='"/mnt/c/Program Files/Sublime Text 3/subl.exe"'
 alias chrome='"/mnt/c/Program Files (x86)/Google/Chrome/Application/chrome.exe"'
+
+# Provides a way to copy output to the clipboard buffer. To perform in Ubuntu
+#   must install either `sudo apt install xsel` or `sudo apt install xclip` 
+#   with `alias copy='xsel -ib'` or `alias copy='xclip -sel clip'`
+# Example:
+#   echo "foo" | copy
+alias copy='clip.exe'
+
+
+
