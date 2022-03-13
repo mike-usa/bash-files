@@ -3,7 +3,13 @@
 # for examples
 
 # If not running interactively, don't do anything
-[ -z "$PS1" ] && return
+# Was: 
+#   [ -z "$PS1" ] && return
+# Bash reference manual recommends checking the value of special `-` parameter:
+case $- in
+  *i*) ;;
+    *) return;;
+esac
 
 # don't put duplicate lines in the history. See bash(1) for more options
 # don't overwrite GNU Midnight Commander's setting of `ignorespace'.
@@ -34,33 +40,40 @@ if [ -z "${debian_chroot:-}" ] && [ -r /etc/debian_chroot ]; then
   debian_chroot=$(cat /etc/debian_chroot)
 fi
 
-# set a fancy prompt (non-color, unless we know we "want" color)
-case "$TERM" in
-  xterm-color|*-256color) color_prompt=yes;;
-esac
+###############################################################################
+## COLOR PROMPT
+###############################################################################
+  # set a fancy prompt (non-color, unless we know we "want" color)
+  case "$TERM" in
+    xterm-color|*-256color) color_prompt=yes;;
+  esac
 
-# uncomment for a colored prompt, if the terminal has the capability; turned
-# off by default to not distract the user: the focus in a terminal window
-# should be on the output of commands, not on the prompt
-#force_color_prompt=yes
+  # uncomment for a colored prompt, if the terminal has the capability; turned
+  # off by default to not distract the user: the focus in a terminal window
+  # should be on the output of commands, not on the prompt
+  #force_color_prompt=yes
 
-if [ -n "$force_color_prompt" ]; then
-  if [ -x /usr/bin/tput ] && tput setaf 1 >&/dev/null; then
-    # We have color support; assume it's compliant with Ecma-48
-    # (ISO/IEC-6429). (Lack of such support is extremely rare, and such
-    # a case would tend to support setf rather than setaf.)
-    color_prompt=yes
-  else
-    color_prompt=
+  if [ -n "$force_color_prompt" ]; then
+    if [ -x /usr/bin/tput ] && tput setaf 1 >&/dev/null; then
+      # We have color support; assume it's compliant with Ecma-48
+      # (ISO/IEC-6429). (Lack of such support is extremely rare, and such
+      # a case would tend to support setf rather than setaf.)
+      color_prompt=yes
+    else
+      color_prompt=
+    fi
   fi
-fi
 
-if [ "$color_prompt" = yes ]; then
-  PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
-else
-  PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w\$ '
-fi
-unset color_prompt force_color_prompt
+  if [ "$color_prompt" = yes ]; then
+    PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
+  else
+    PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w\$ '
+  fi
+  unset color_prompt force_color_prompt
+###############################################################################
+## END: COLOR PROMPT
+###############################################################################
+
 
 # If this is an xterm set the title to user@host:dir
 case "$TERM" in
@@ -82,6 +95,15 @@ if [ -x /usr/bin/dircolors ]; then
   alias fgrep='fgrep --color=auto'
   alias egrep='egrep --color=auto'
 fi
+
+# Colored GCC warnings and errors
+#export GCC_COLORS='error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01'
+
+# Add an "alert" alias for long running commands.  Use like so:
+#   sleep 10; alert
+# May need to `sudo apt install libnotify-bin`
+alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo error)" "$(history|tail -n1|sed -e '\''s/^\s*[0-9]\+\s*//;s/[;&|]\s*alert$//'\'')"'
+
 
 # Alias definitions.
 # You may want to put all your additions into a separate file like
@@ -115,8 +137,8 @@ fi
 # some programs will expect to use the system version (eg ruby)
 # and break if they get the newer, Homebrew version
 export PATH=~/.rbenv/shims:~/bin:/usr/local/bin:/usr/local/sbin:~/bin:$PATH
-export CDPATH=~/Workspace/node/sails:Projects/:$CDPATH
-#Remove Duplicates:
+export CDPATH=./:~/Projects/sails:Projects/:$CDPATH
+# Remove Duplicates:
 PATH=`perl -e '@A=split(/:/,$ENV{PATH});%H=map {$A[$#A-$_]=>$#A-$_} (0..$#A);@A=join(":",sort{$H{$a} <=> $H{$b} }keys %H);print "@A"'`
 export PATH
 export LANG=en_US.UTF-8
